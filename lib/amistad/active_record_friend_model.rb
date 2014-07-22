@@ -1,5 +1,3 @@
-require 'squeel'
-
 module Amistad
   module ActiveRecordFriendModel
     extend ActiveSupport::Concern
@@ -82,22 +80,38 @@ module Amistad
     def friends
       friendship_model = Amistad::Friendships.const_get(:"#{Amistad.friendship_model}")
 
-      approved_friendships = friendship_model.where{
-        ( friendable_id == my{id} ) &
-        ( pending       == false  ) &
-        ( blocker_id    == nil    )
-      }
+      approved_friendships = friendship_model.where(
+        friendable_id: self.id,
+        pending: false,
+        blocker_id: nil
+      ).select(:friendable_id)
 
-      approved_inverse_friendships = friendship_model.where{
-        ( friend_id  == my{id} ) &
-        ( pending    == false   ) &
-        ( blocker_id == nil     )
-      }
+      approved_inverse_friendships = friendship_model.where(
+        friend_id: self.id,
+        pending: false,
+        blocker_id: nil
+      ).select(:friend_id)
 
-      self.class.where{
-        ( id.in(approved_friendships.select{friend_id})              ) |
-        ( id.in(approved_inverse_friendships.select{friendable_id})  )
-      }
+      all_friend_ids = approved_friendships.collect(&:friendable_id) + approved_inverse_friendships.collect(&:friend_id)
+
+      self.class.where('id IN (?)', all_friend_ids)
+
+      # approved_friendships = friendship_model.where{
+      #   ( friendable_id == my{id} ) &
+      #   ( pending       == false  ) &
+      #   ( blocker_id    == nil    )
+      # }
+
+      # approved_inverse_friendships = friendship_model.where{
+      #   ( friend_id  == my{id} ) &
+      #   ( pending    == false   ) &
+      #   ( blocker_id == nil     )
+      # }
+
+      # self.class.where{
+      #   ( id.in(approved_friendships.select{friend_id})              ) |
+      #   ( id.in(approved_inverse_friendships.select{friendable_id})  )
+      # }
     end
 
     # total # of invited and invited_by without association loading
@@ -173,4 +187,5 @@ module Amistad
       friendship
     end
   end
+
 end
