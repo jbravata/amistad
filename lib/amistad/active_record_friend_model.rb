@@ -75,7 +75,7 @@ module Amistad
         blocker_id: nil
       ).select(:friend_id)
 
-      all_friend_ids = approved_friendships.collect(&:friendable_id) + approved_inverse_friendships.collect(&:friend_id)
+      all_friend_ids = approved_friendships.collect(&:friend_id) + approved_inverse_friendships.collect(&:friendable_id)
 
       self.class.where('id IN (?)', all_friend_ids)
 
