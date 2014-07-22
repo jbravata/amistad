@@ -67,13 +67,13 @@ module Amistad
         friendable_id: self.id,
         pending: false,
         blocker_id: nil
-      ).select(:friendable_id)
+      ).select(:friend_id)
 
       approved_inverse_friendships = friendship_model.where(
         friend_id: self.id,
         pending: false,
         blocker_id: nil
-      ).select(:friend_id)
+      ).select(:friendable_id)
 
       all_friend_ids = approved_friendships.collect(&:friend_id) + approved_inverse_friendships.collect(&:friendable_id)
 
